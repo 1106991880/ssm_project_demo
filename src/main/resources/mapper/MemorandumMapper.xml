@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.springmvc.dao.MemorandumDao">
+	<resultMap id="memorandum" type="cn.springmvc.model.Memorandum">
+		<id column="memorandum_id" property="memorandumId" jdbcType="VARCHAR" />
+		<result column="memorandum_date" property="memorandumDate"
+			jdbcType="DATE" />
+		<result column="memorandum_complete" property="memorandumComplete"
+			jdbcType="VARCHAR" />
+		<result column="memorandum_title" property="memorandumTitle"
+			jdbcType="VARCHAR" />
+		<result column="memorandum_content" property="memorandumContent"
+			jdbcType="VARCHAR" />
+		<result column="create_user" property="createUser" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="basesql">
+		MEMORANDUM_ID,
+		MEMORANDUM_DATE,
+		MEMORANDUM_COMPLETE,
+		MEMORANDUM_TITLE,
+		MEMORANDUM_CONTENT,
+		CREATE_USER,
+		CREATE_TIME
+	</sql>
+	<select id="getAllMemorandum" parameterType="java.lang.String"
+		resultMap="memorandum">
+		SELECT
+		<include refid="basesql" />
+		FROM mvc_memorandum
+		WHERE
+		CREATE_USER = #{createUser, jdbcType=VARCHAR}
+	</select>
+	<insert id="saveMemorandum" parameterType="cn.springmvc.model.Memorandum">
+		<selectKey resultType="java.lang.String" keyProperty="memorandumId" order="BEFORE">
+			SELECT REPLACE(UUID(),'-','') FROM DUAL
+		</selectKey>
+		INSERT INTO mvc_memorandum
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="memorandumId != null and memorandumId != ''">
+				MEMORANDUM_ID,
+			</if>
+			<if test="memorandumDate != null and memorandumDate != ''">
+				MEMORANDUM_DATE,
+			</if>
+			<if test="memorandumComplete != null and memorandumComplete != ''">
+				MEMORANDUM_COMPLETE,
+			</if>
+			<if test="memorandumTitle != null and memorandumTitle != ''">
+				MEMORANDUM_TITLE,
+			</if>
+			<if test="memorandumContent != null and memorandumContent != ''">
+				MEMORANDUM_CONTENT,
+			</if>
+			<if test="createUser != null and createUser != ''">
+				CREATE_USER,
+			</if>
+			<if test="createTime != null and createTime != ''">
+				CREATE_TIME,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="memorandumId != null and memorandumId != ''">
+				#{memorandumId, jdbcType=VARCHAR},
+			</if>
+			<if test="memorandumDate != null and memorandumDate != ''">
+				#{memorandumDate, jdbcType=DATE},
+			</if>
+			<if test="memorandumComplete != null and memorandumComplete != ''">
+				#{memorandumComplete, jdbcType=VARCHAR},
+			</if>
+			<if test="memorandumTitle != null and memorandumTitle != ''">
+				#{memorandumTitle, jdbcType=VARCHAR},
+			</if>
+			<if test="memorandumContent != null and memorandumContent != ''">
+				#{memorandumContent, jdbcType=VARCHAR},
+			</if>
+			<if test="createUser != null and createUser != ''">
+				#{createUser, jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null and createTime != ''">
+				#{createTime, jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+
+	<update id="updateMemorandum" parameterType="cn.springmvc.model.Memorandum">
+		UPDATE mvc_memorandum
+		<set>
+			<if test="memorandumDate != null and memorandumDate != ''">
+				MEMORANDUM_DATE = #{memorandumDate, jdbcType=DATE},
+			</if>
+			<if test="memorandumComplete != null and memorandumComplete != ''">
+				MEMORANDUM_COMPLETE = #{memorandumComplete, jdbcType=VARCHAR},
+			</if>
+			<if test="memorandumTitle != null and memorandumTitle != ''">
+				MEMORANDUM_TITLE = #{memorandumTitle, jdbcType=VARCHAR},
+			</if>
+			MEMORANDUM_CONTENT = #{memorandumContent, jdbcType=VARCHAR}
+		</set>
+		WHERE MEMORANDUM_ID = #{memorandumId, jdbcType=VARCHAR}
+	</update>
+	
+	<select id="queryMemorandum" parameterType="java.util.Map" resultMap="memorandum">
+		SELECT 
+		  m.MEMORANDUM_ID,
+		  m.MEMORANDUM_DATE,
+		  d.DICTIONARY_DETAIL_NAME AS MEMORANDUM_COMPLETE,
+		  m.MEMORANDUM_TITLE,
+		  m.MEMORANDUM_CONTENT,
+		  m.CREATE_TIME,
+		  u.TRUE_NAME AS CREATE_USER 
+		FROM
+		  mvc_memorandum m 
+		  LEFT JOIN mvc_user_info u 
+		    ON m.CREATE_USER = u.USER_ID 
+		  LEFT JOIN mvc_dictionary_DETAIL d 
+		    ON m.MEMORANDUM_COMPLETE = d.DICTIONARY_DETAIL_CODE 
+		<where>
+			<if test="userId != null and userId != ''">
+				AND m.CREATE_USER = #{userId, jdbcType=VARCHAR}
+			</if>
+			<if test="memorandumDate != null and memorandumDate != ''">
+				AND m.MEMORANDUM_DATE = #{memorandumDate, jdbcType=DATE}
+			</if>
+			<if test="memorandumComplete != null and memorandumComplete != ''">
+				AND m.MEMORANDUM_COMPLETE = #{memorandumComplete, jdbcType=VARCHAR}
+			</if>
+		</where>
+		ORDER BY m.MEMORANDUM_DATE DESC
+	</select>
+	
+	<select id="getMemorandumById" parameterType="java.lang.String" resultMap="memorandum">
+		SELECT
+		<include refid="basesql" />
+		FROM mvc_memorandum
+		WHERE
+		MEMORANDUM_ID = #{memorandumId, jdbcType=VARCHAR}
+	</select>
+	
+	<delete id="delMemorandumById" parameterType="java.lang.String">
+		DELETE FROM mvc_memorandum WHERE MEMORANDUM_ID = #{memorandumId, jdbcType=VARCHAR}
+	</delete>
+	
+</mapper>

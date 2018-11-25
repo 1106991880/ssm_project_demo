@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.springmvc.dao.DeptInfoDao">
+
+	<resultMap id="dept" type="cn.springmvc.model.DeptInfo">
+		<id column="dept_id" property="deptId" jdbcType="VARCHAR" />
+		<result column="dept_no" property="deptNo" jdbcType="VARCHAR" />
+		<result column="dept_name" property="deptName" jdbcType="VARCHAR" />
+		<result column="establish_time" property="establishTime" jdbcType="TIMESTAMP" />
+		<result column="dept_manager" property="deptManager" jdbcType="VARCHAR" />
+		<result column="super_id" property="superId" jdbcType="VARCHAR" />
+		<result column="dept_desc" property="deptDesc" jdbcType="VARCHAR" />
+		<result column="if_leaf" property="ifLeaf" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<sql id="basesql">
+		dept_id,
+		dept_no,
+		dept_name,
+		establish_time,
+		dept_manager,
+		super_id,
+		dept_desc,
+		if_leaf
+	</sql>
+	
+	<select id="queryDeptBySuperId" parameterType="java.lang.String" resultMap="dept">
+		select
+		<include refid="basesql"/>
+		from mvc_dept_info
+		where 
+		super_id = #{superId}
+		order by if_leaf, dept_id
+	</select>
+	<select id="getDeptByDeptId" parameterType="java.lang.String" resultMap="dept">
+		select
+		<include refid="basesql"/>
+		from mvc_dept_info
+		where 
+		dept_id = #{deptId}
+	</select>
+	
+	<insert id="insertDept" parameterType="cn.springmvc.model.DeptInfo">
+		insert into mvc_dept_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="deptId != null and deptId != ''">
+				dept_id,
+			</if>
+			<if test="deptNo != null and deptNo != ''">
+				dept_no,
+			</if>
+			<if test="deptName != null and deptName != ''">
+				dept_name,
+			</if>
+			<if test="establishTime != null and establishTime != ''">
+				establish_time,
+			</if>
+			<if test="deptManager != null and deptManager != ''">
+				dept_manager,
+			</if>
+			<if test="superId != null and superId != ''">
+				super_id,
+			</if>
+			<if test="deptDesc != null and deptDesc != ''">
+				dept_desc,
+			</if>
+			<if test="ifLeaf != null and ifLeaf != ''">
+				if_leaf,
+			</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="deptId != null and deptId != ''">
+				#{deptId, jdbcType=VARCHAR},
+			</if>
+			<if test="deptNo != null and deptNo != ''">
+				#{deptNo, jdbcType=VARCHAR},
+			</if>
+			<if test="deptName != null and deptName != ''">
+				#{deptName, jdbcType=VARCHAR},
+			</if>
+			<if test="establishTime != null and establishTime != ''">
+				#{establishTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="deptManager != null and deptManager != ''">
+				#{deptManager, jdbcType=VARCHAR},
+			</if>
+			<if test="superId != null and superId != ''">
+				#{superId, jdbcType=VARCHAR},
+			</if>
+			<if test="deptDesc != null and deptDesc != ''">
+				#{deptDesc, jdbcType=VARCHAR},
+			</if>
+			<if test="ifLeaf != null and ifLeaf != ''">
+				#{ifLeaf, jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateDept" parameterType="cn.springmvc.model.DeptInfo">
+		update mvc_dept_info
+		<set>
+			<if test="deptNo != null">
+				dept_no = #{deptNo, jdbcType=VARCHAR},
+			</if>
+			<if test="deptName != null">
+				dept_name = #{deptName, jdbcType=VARCHAR},
+			</if>
+			<if test="establishTime != null">
+				establish_time = #{establishTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="deptManager != null">
+				dept_manager = #{deptManager, jdbcType=VARCHAR},
+			</if>
+			<if test="superId != null">
+				super_id = #{superId, jdbcType=VARCHAR},
+			</if>
+			<if test="deptDesc != null">
+				dept_desc = #{deptDesc, jdbcType=VARCHAR},
+			</if>
+			<if test="ifLeaf != null">
+				if_leaf = #{ifLeaf, jdbcType=VARCHAR},
+			</if>
+		</set>
+		where dept_id = #{deptId, jdbcType=VARCHAR}
+	</update>
+	<delete id="deleteDept" parameterType="java.lang.String">
+		delete from mvc_dept_info where dept_id = #{deptId, jdbcType=VARCHAR}
+	</delete>
+	<select id="getMaxPrimaryKey" resultType="java.lang.String">
+		select MAX(dept_id) from mvc_dept_info
+	</select>
+	
+	<select id="getMaxDeptNo" resultType="java.lang.String">
+		select MAX(dept_no) from mvc_dept_info where super_id = #{superId}
+	</select>
+	
+	<select id="getDeptByDeptManager" parameterType="java.lang.String" resultMap="dept">
+		select
+		<include refid="basesql"/>
+		from mvc_dept_info
+		where 
+		dept_manager = #{deptManager}
+	</select>
+</mapper>

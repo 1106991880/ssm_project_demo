@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.springmvc.dao.DictionaryDao">
+
+	<resultMap id="dictionary" type="cn.springmvc.model.Dictionary">
+		<id column="DICTIONARY_ID" property="dictId" jdbcType="VARCHAR" />
+		<result column="DICTIONARY_CODE" property="dictCode" jdbcType="VARCHAR" />
+		<result column="DICTIONARY_NAME" property="dictName" jdbcType="VARCHAR" />
+		<result column="DICTIONARY_STATUS" property="dictStatus" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="CREATOR" property="creator" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="basesql">
+		DICTIONARY_ID, DICTIONARY_CODE, DICTIONARY_NAME, DICTIONARY_STATUS, CREATE_TIME, CREATOR
+	</sql>
+
+	<select id="queryDictionary" parameterType="cn.springmvc.model.Dictionary" resultMap="dictionary">
+		SELECT 
+		  d.DICTIONARY_ID,
+		  d.DICTIONARY_CODE,
+		  d.DICTIONARY_NAME,
+		  CASE
+		    WHEN d.DICTIONARY_STATUS = '0' 
+		    THEN '启用' 
+		    WHEN d.DICTIONARY_STATUS = '1' 
+		    THEN '禁用' 
+		    ELSE '' 
+		  END AS DICTIONARY_STATUS,
+		  d.CREATE_TIME,
+		  u.TRUE_NAME AS CREATOR 
+		FROM
+		  mvc_dictionary d 
+		  LEFT JOIN mvc_user_info u ON d.CREATOR = u.USER_ID 
+		<where></where>
+		ORDER BY d.CREATE_TIME
+	</select>
+	
+	<select id="getDictionary" parameterType="java.lang.String" resultMap="dictionary">
+		SELECT 
+		 <include refid="basesql" />
+		FROM
+		  mvc_dictionary
+		WHERE 
+		  DICTIONARY_ID = #{dictId, jdbcType=VARCHAR}
+	</select>
+	
+	<insert id="insertDictionary" parameterType="cn.springmvc.model.Dictionary">
+		<selectKey resultType="java.lang.String" keyProperty="dictId" order="BEFORE">
+			SELECT REPLACE(UUID(),'-','') FROM DUAL
+		</selectKey>
+		INSERT INTO mvc_dictionary
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="dictId != null and dictId != ''">
+				DICTIONARY_ID,
+			</if>
+			<if test="dictCode != null and dictCode != ''">
+				DICTIONARY_CODE,
+			</if>
+			<if test="dictName != null and dictName != ''">
+				DICTIONARY_NAME,
+			</if>
+			<if test="dictStatus != null and dictStatus != ''">
+				DICTIONARY_STATUS,
+			</if>
+			<if test="createTime != null and createTime != ''">
+				CREATE_TIME,
+			</if>
+			<if test="creator != null and creator != ''">
+				CREATOR,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="dictId != null and dictId != ''">
+				#{dictId, jdbcType=VARCHAR},
+			</if>
+			<if test="dictCode != null and dictCode != ''">
+				#{dictCode, jdbcType=VARCHAR},
+			</if>
+			<if test="dictName != null and dictName != ''">
+				#{dictName, jdbcType=VARCHAR},
+			</if>
+			<if test="dictStatus != null and dictStatus != ''">
+				#{dictStatus, jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null and createTime != ''">
+				#{createTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="creator != null and creator != ''">
+				#{creator, jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	
+	<update id="updateDictionary" parameterType="cn.springmvc.model.Dictionary">
+		UPDATE mvc_dictionary
+		<set>
+			<if test="dictCode != null and dictCode != ''">
+				DICTIONARY_CODE = #{dictCode, jdbcType=VARCHAR},
+			</if>
+			<if test="dictName != null and dictName != ''">
+				DICTIONARY_NAME = #{dictName, jdbcType=VARCHAR},
+			</if>
+			<if test="dictStatus != null and dictStatus != ''">
+				DICTIONARY_STATUS = #{dictStatus, jdbcType=VARCHAR},
+			</if>
+		</set>
+		WHERE DICTIONARY_ID = #{dictId, jdbcType=VARCHAR}
+	</update>
+	
+	<select id="getDictByCode" parameterType="java.lang.String" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM mvc_dictionary WHERE DICTIONARY_CODE = #{dictCode, jdbcType=VARCHAR}
+	</select>
+
+</mapper>

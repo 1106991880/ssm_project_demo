@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.springmvc.dao.LoginUserDao">
+	<insert id="saveLoginUser" parameterType="cn.springmvc.model.LoginUser">
+		<selectKey resultType="java.lang.String" keyProperty="loginuser_id"
+			order="BEFORE">
+			SELECT REPLACE(UUID(),'-','') FROM DUAL
+		</selectKey>
+		INSERT INTO mvc_loginuser
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			loginuser_id,
+			<if test="loginuser_ip != null">
+				loginuser_ip,
+			</if>
+			<if test="loginuser_address != null">
+				loginuser_address,
+			</if>
+			<if test="loginuser_logintime != null">
+				loginuser_logintime,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="loginuser_id != null">
+				#{loginuser_id, jdbcType=VARCHAR},
+			</if>
+			<if test="loginuser_ip != null">
+				#{loginuser_ip, jdbcType=VARCHAR},
+			</if>
+			<if test="loginuser_address != null">
+				#{loginuser_address, jdbcType=VARCHAR},
+			</if>
+			<if test="loginuser_logintime != null">
+				#{loginuser_logintime, jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	
+	<select id="getLoginUsers" parameterType="java.lang.String"
+		resultType="cn.springmvc.model.LoginUser">
+		SELECT * FROM mvc_loginuser m ORDER BY m.loginuser_logintime desc
+	</select>
+</mapper>

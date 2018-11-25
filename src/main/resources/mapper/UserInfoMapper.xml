@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.springmvc.dao.UserInfoDao">
+	<resultMap id="userInfo" type="cn.springmvc.model.UserInfo">
+		<id column="user_id" property="userId" jdbcType="VARCHAR" />
+		<result column="user_name" property="userName" jdbcType="VARCHAR" />
+		<result column="password" property="password" jdbcType="VARCHAR" />
+		<result column="true_name" property="trueName" jdbcType="VARCHAR" />
+		<result column="mail" property="mail" jdbcType="VARCHAR" />
+		<result column="phone" property="phone" jdbcType="VARCHAR" />
+		<result column="dept_id" property="deptId" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="user_level" property="userLevel" jdbcType="VARCHAR" />
+		<result column="file_name" property="fileName" jdbcType="VARCHAR" />
+		<result column="file_byte" property="fileByte" javaType="byte[]"
+			jdbcType="BLOB" typeHandler="org.apache.ibatis.type.BlobTypeHandler" />
+	</resultMap>
+	<resultMap id="userList" type="cn.springmvc.model.UserInfo">
+		<id column="user_id" property="userId" jdbcType="VARCHAR" />
+		<result column="user_name" property="userName" jdbcType="VARCHAR" />
+		<result column="password" property="password" jdbcType="VARCHAR" />
+		<result column="true_name" property="trueName" jdbcType="VARCHAR" />
+		<result column="mail" property="mail" jdbcType="VARCHAR" />
+		<result column="phone" property="phone" jdbcType="VARCHAR" />
+		<result column="dept_id" property="deptId" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="user_level" property="userLevel" jdbcType="VARCHAR" />
+		<result column="file_name" property="fileName" jdbcType="VARCHAR" />
+		<result column="dept_no" property="dept.deptNo" jdbcType="VARCHAR" />
+		<result column="dept_name" property="dept.deptName" jdbcType="VARCHAR" />
+		<!-- <association column="dept_id" property="dept" javaType="com.dfc.springmvc.pojo.Dept" 
+			select="com.dfc.springmvc.dao.DeptDao.getDeptByDeptId" /> -->
+	</resultMap>
+	<sql id="baseSql">
+		u.user_id,
+		u.user_name,
+		u.true_name,
+		u.mail,
+		u.phone,
+		u.dept_id,
+		u.create_time,
+		u.update_time,
+		IF(u.user_level =
+		'0','系统管理员','普通用户') as user_level,
+		u.file_name,
+		d.dept_no,
+		d.dept_name
+	</sql>
+	<sql id="baseSql2">
+		user_id,
+		user_name,
+		true_name,
+		mail,
+		phone,
+		dept_id,
+		create_time,
+		update_time,
+		user_level,
+		file_name
+	</sql>
+	<select id="login" parameterType="java.lang.String" resultMap="userInfo">
+	 	<![CDATA[
+			SELECT * FROM mvc_user_info u WHERE u.user_name = #{userName} AND u.password = #{password} AND u.user_level = 0
+		]]>
+	</select>
+	<update id="updatePwd">
+		UPDATE mvc_user_info SET PASSWORD = #{newpwd,
+		jdbcType=VARCHAR} WHERE USER_ID = #{user_id, jdbcType=VARCHAR}
+	</update>
+	<update id="updateUser" parameterType="cn.springmvc.model.UserInfo">
+		UPDATE mvc_user_info
+		<set>
+			<if test="userName != null">
+				user_name = #{userName, jdbcType=VARCHAR},
+			</if>
+			<if test="trueName != null">
+				true_name = #{trueName, jdbcType=VARCHAR},
+			</if>
+			<if test="mail != null">
+				mail = #{mail, jdbcType=VARCHAR},
+			</if>
+			<if test="phone != null">
+				phone = #{phone, jdbcType=VARCHAR},
+			</if>
+			<if test="deptId != null">
+				dept_id = #{deptId, jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime, jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime, jdbcType=VARCHAR},
+			</if>
+			<if test="userLevel != null">
+				user_level = #{userLevel, jdbcType=VARCHAR},
+			</if>
+			<if test="fileName != null">
+				file_name = #{fileName, jdbcType=VARCHAR},
+			</if>
+			<if test="fileByte != null">
+				file_byte = #{fileByte, jdbcType=VARCHAR},
+			</if>
+		</set>
+		WHERE user_id = #{userId}
+	</update>
+	<select id="getTotalRows" resultType="java.lang.Integer"
+		parameterType="java.lang.String">
+		SELECT count(*) FROM mvc_user_info u LEFT JOIN mvc_dept_info d ON
+		u.dept_id = d.dept_id
+		<where>
+			<if test="trueName != null and trueName != ''">
+				AND u.true_name LIKE CONCAT('%',#{trueName},'%')
+			</if>
+			<if test="mail != null and mail != ''">
+				AND u.mail LIKE CONCAT('%',#{mail},'%')
+			</if>
+			<if test="userLevel != null and userLevel != ''">
+				AND u.user_level = #{userLevel}
+			</if>
+			<if test="deptNo != null and deptNo != ''">
+				AND d.dept_no LIKE CONCAT('',#{deptNo},'%')
+			</if>
+		</where>
+	</select>
+	<select id="queryUsers" parameterType="java.lang.String"
+		resultMap="userList">
+		SELECT
+		<include refid="baseSql" />
+		FROM mvc_user_info u
+		LEFT JOIN mvc_dept_info d ON u.dept_id = d.dept_id
+		<where>
+			<if test="trueName != null and trueName != ''">
+				AND u.true_name LIKE CONCAT('%',#{trueName},'%')
+			</if>
+			<if test="mail != null and mail != ''">
+				AND u.mail LIKE CONCAT('%',#{mail},'%')
+			</if>
+			<if test="userLevel != null and userLevel != ''">
+				AND u.user_level = #{userLevel}
+			</if>
+			<if test="deptNo != null and deptNo != ''">
+				AND d.dept_no LIKE CONCAT('',#{deptNo},'%')
+			</if>
+		</where>
+		ORDER BY d.dept_no
+	</select>
+	<select id="queryUsersInManyName" parameterType="java.util.ArrayList"
+		resultMap="userList">
+		select
+		<include refid="baseSql" />
+		FROM mvc_user_info u
+		LEFT JOIN mvc_dept_info d ON u.dept_id = d.dept_id
+		<where>
+			u.true_name in
+			<foreach item="item" collection="list" separator="," open="(" close=")" index="">
+				#{item, jdbcType=VARCHAR}
+			</foreach>
+		</where>
+	</select>
+	<select id="getUserInfoByUserName" resultMap="userInfo"
+		parameterType="java.lang.String">
+		SELECT * FROM mvc_user_info u WHERE u.user_name =
+		#{userName}
+	</select>
+	<select id="getUser" parameterType="String" resultMap="userInfo">
+		SELECT
+		<include refid="baseSql2" />
+		FROM mvc_user_info
+		WHERE user_id = #{userId}
+	</select>
+	<insert id="saveUser" parameterType="cn.springmvc.model.UserInfo">
+		<selectKey resultType="java.lang.String" keyProperty="userId"
+			order="BEFORE">
+			SELECT REPLACE(UUID(),'-','') FROM DUAL
+		</selectKey>
+		INSERT INTO mvc_user_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			user_id,
+			<if test="userName != null">
+				user_name,
+			</if>
+			<if test="trueName != null">
+				true_name,
+			</if>
+			<if test="mail != null">
+				mail,
+			</if>
+			<if test="phone != null">
+				phone,
+			</if>
+			<if test="deptId != null">
+				dept_id,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="userLevel != null">
+				user_level,
+			</if>
+			<if test="fileName != null">
+				file_name,
+			</if>
+			<if test="fileByte != null">
+				file_byte,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="userId != null">
+				#{userId, jdbcType=VARCHAR},
+			</if>
+			<if test="userName != null">
+				#{userName, jdbcType=VARCHAR},
+			</if>
+			<if test="trueName != null">
+				#{trueName, jdbcType=VARCHAR},
+			</if>
+			<if test="mail != null">
+				#{mail, jdbcType=VARCHAR},
+			</if>
+			<if test="phone != null">
+				#{phone, jdbcType=VARCHAR},
+			</if>
+			<if test="deptId != null">
+				#{deptId, jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="userLevel != null">
+				#{userLevel, jdbcType=VARCHAR},
+			</if>
+			<if test="fileName != null">
+				#{fileName, jdbcType=VARCHAR},
+			</if>
+			<if test="fileByte != null">
+				#{fileByte, jdbcType=BLOB},
+			</if>
+		</trim>
+	</insert>
+	<delete id="deleteUser" parameterType="String">
+		DELETE FROM mvc_user_info WHERE user_id IN
+		<foreach collection="array" item="idItem" open="(" separator=","
+			close=")">
+			#{idItem}
+		</foreach>
+	</delete>
+	<select id="checkUserName" parameterType="String" resultType="java.lang.Integer">
+		SELECT COUNT(*) FROM mvc_user_info WHERE user_name = #{userName}
+	</select>
+	<select id="getAllUsers" resultMap="userInfo">
+		SELECT
+		<include refid="baseSql2" />
+		FROM mvc_user_info
+		ORDER BY user_level, user_name
+	</select>
+
+	<select id="downloadFile" parameterType="java.lang.String"
+		resultMap="userInfo">
+		select file_name, file_byte from mvc_user_info where user_id
+		= #{userId, jdbcType=VARCHAR}
+	</select>
+
+	<update id="deleteFile" parameterType="java.lang.String">
+		UPDATE mvc_user_info set
+		file_name = '', file_byte = '' WHERE user_id = #{userId,
+		jdbcType=VARCHAR}
+	</update>
+
+	<update id="deleteDeptId" parameterType="java.lang.String">
+		UPDATE mvc_user_info SET
+		dept_id = &apos;&apos; WHERE dept_id = #{deptId, jdbcType=VARCHAR}
+	</update>
+
+	<select id="getUserPassword" parameterType="java.lang.String"
+		resultType="java.lang.String">
+		SELECT PASSWORD FROM mvc_user_info WHERE USER_ID =
+		#{userId, jdbcType=VARCHAR}
+	</select>
+
+	<update id="updatePWD" parameterType="java.lang.String">
+		UPDATE mvc_user_info SET
+		PASSWORD = #{password, jdbcType=VARCHAR} WHERE USER_ID = #{userId,
+		jdbcType=VARCHAR}
+	</update>
+</mapper>

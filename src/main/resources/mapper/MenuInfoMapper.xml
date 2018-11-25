@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.springmvc.dao.MenuInfoDao">
+	<resultMap id="menu" type="cn.springmvc.model.MenuInfo">
+		<id column="menu_id" property="menuId" jdbcType="VARCHAR" />
+		<result column="menu_name" property="menuName" jdbcType="VARCHAR" />
+		<result column="menu_uri" property="menuUri" jdbcType="VARCHAR" />
+		<result column="menu_order" property="menuOrder" jdbcType="DECIMAL" />
+		<result column="menu_desc" property="menuDesc" jdbcType="VARCHAR" />
+		<result column="menu_type" property="menuType" jdbcType="VARCHAR" />
+		<result column="menu_icon" property="menuIcon" jdbcType="VARCHAR" />
+		<result column="creator" property="creator" jdbcType="VARCHAR" />
+		<result column="create_name" property="createName" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="baseMenu">
+		menu_id,
+		menu_name,
+		menu_uri,
+		menu_order,
+		menu_desc,
+		menu_type,
+		menu_icon
+	</sql>
+
+	<sql id="baseSql">
+		menu_id,
+		menu_name,
+		menu_uri,
+		menu_order,
+		menu_desc,
+		menu_type,
+		menu_icon,
+		creator,
+		(SELECT TRUE_NAME FROM mvc_user_info WHERE USER_ID =
+		creator) as create_name,
+		create_time
+	</sql>
+	<select id="getMenusByMenuType" parameterType="String"
+		resultMap="menu">
+		SELECT
+		<include refid="baseMenu" />
+		FROM mvc_menu_info
+		<where>
+			<if test="menuType != null">
+				AND menu_type = #{menuType, jdbcType=VARCHAR}
+			</if>
+		</where>
+		ORDER BY menu_order
+	</select>
+	<select id="getUserMenus" parameterType="java.lang.String"
+		resultMap="menu">
+		SELECT
+		m.menu_id, m.menu_name, m.menu_uri
+		FROM
+		mvc_user_info u
+		LEFT JOIN mvc_user_role ur
+		ON u.user_id = ur.user_id
+		LEFT JOIN mvc_role r
+		ON ur.role_id = r.role_id
+		LEFT JOIN mvc_role_menu rm
+		ON rm.role_id = r.role_id
+		LEFT JOIN mvc_menu_info m
+		ON rm.menu_id = m.menu_id
+		WHERE u.user_id = #{userId}
+		AND m.menu_type = 'system'
+		ORDER BY m.menu_order
+	</select>
+	<select id="queryAllMenus" parameterType="cn.springmvc.model.MenuInfo"
+		resultMap="menu">
+		SELECT
+		<include refid="baseSql" />
+		FROM mvc_menu_info m
+		<where>
+			<if test="menuName != null and menuName != ''">
+				AND m.menu_name LIKE CONCAT('%',#{menuName,
+				jdbcType=VARCHAR},'%')
+			</if>
+		</where>
+		ORDER BY m.menu_order
+	</select>
+	<select id="getTotalRecords" parameterType="cn.springmvc.model.MenuInfo"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM mvc_menu_info m
+		<where>
+			<if test="menuName != null and menuName != ''">
+				AND m.menu_name LIKE CONCAT('%',#{menuName,
+				jdbcType=VARCHAR},'%')
+			</if>
+		</where>
+	</select>
+	<select id="querySystemMenus" parameterType="cn.springmvc.model.MenuInfo"
+		resultMap="menu">
+		SELECT
+		<include refid="baseSql" />
+		FROM mvc_menu_info m
+		<where>
+			m.menu_type = 'system'
+			<if test="menuName != null and menuName != ''">
+				AND m.menu_name LIKE CONCAT('%',#{menuName,
+				jdbcType=VARCHAR},'%')
+			</if>
+		</where>
+		ORDER BY m.menu_order
+	</select>
+	<select id="getSystemRecords" parameterType="cn.springmvc.model.MenuInfo"
+		resultType="java.lang.Integer">
+		SELECT count(*) FROM mvc_menu_info m
+		<where>
+			m.menu_type = 'system'
+			<if test="menuName != null and menuName != ''">
+				AND m.menu_name LIKE CONCAT('%',#{menuName,
+				jdbcType=VARCHAR},'%')
+			</if>
+		</where>
+	</select>
+	<select id="getMenu" parameterType="String" resultMap="menu">
+		SELECT
+		<include refid="baseSql" />
+		FROM mvc_menu_info m
+		WHERE m.menu_id = #{menuId}
+	</select>
+	<select id="getMaxMenuOrder" resultType="java.lang.Integer">
+		SELECT MAX(m.menu_order)
+		FROM mvc_menu_info m
+	</select>
+	<insert id="saveMenu" parameterType="cn.springmvc.model.MenuInfo">
+		<selectKey resultType="java.lang.String" keyProperty="menuId"
+			order="BEFORE">
+			SELECT REPLACE(UUID(),'-','') FROM DUAL
+		</selectKey>
+		INSERT INTO mvc_menu_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="menuName != null">
+				menu_id,
+			</if>
+			<if test="menuName != null">
+				menu_name,
+			</if>
+			<if test="menuUri != null">
+				menu_uri,
+			</if>
+			<if test="menuOrder != null">
+				menu_order,
+			</if>
+			<if test="menuDesc != null">
+				menu_desc,
+			</if>
+			<if test="menuType != null">
+				menu_type,
+			</if>
+			<if test="creator != null">
+				creator,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="menuId != null">
+				#{menuId, jdbcType=VARCHAR},
+			</if>
+			<if test="menuName != null">
+				#{menuName, jdbcType=VARCHAR},
+			</if>
+			<if test="menuUri != null">
+				#{menuUri, jdbcType=VARCHAR},
+			</if>
+			<if test="menuOrder != null">
+				#{menuOrder, jdbcType=DECIMAL},
+			</if>
+			<if test="menuDesc != null">
+				#{menuDesc, jdbcType=VARCHAR},
+			</if>
+			<if test="menuType != null">
+				#{menuType, jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator, jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime, jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateMenu" parameterType="cn.springmvc.model.MenuInfo">
+		UPDATE mvc_menu_info
+		<set>
+			<if test="menuName != null">
+				menu_name = #{menuName, jdbcType=VARCHAR},
+			</if>
+			<if test="menuUri != null">
+				menu_uri = #{menuUri, jdbcType=VARCHAR},
+			</if>
+			<if test="menuDesc != null">
+				menu_desc = #{menuDesc, jdbcType=VARCHAR},
+			</if>
+			<if test="menuType != null">
+				menu_type = #{menuType, jdbcType=VARCHAR},
+			</if>
+			<if test="menuIcon != null">
+				menu_icon = #{menuIcon, jdbcType=VARCHAR},
+			</if>
+		</set>
+		WHERE menu_id = #{menuId, jdbcType=VARCHAR}
+	</update>
+	<delete id="deleteMenu" parameterType="String">
+		DELETE FROM mvc_menu_info
+		WHERE menu_id = #{menuId}
+	</delete>
+
+	<select id="getMenuTypes" resultType="java.lang.String">
+		SELECT DISTINCT menu_type
+		AS menuType FROM mvc_menu_info ORDER BY menu_type
+	</select>
+</mapper>

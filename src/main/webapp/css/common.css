@@ -1,0 +1,57 @@
+@CHARSET "UTF-8";
+
+table.table {
+	width: 100%; 
+	border-width : 1px 1px 1px 1px;
+	border-spacing: 0;
+	border-collapse: collapse;
+	border-style: solid;
+	border-color: #95b8e7;
+	border-width: 1px 1px 1px 1px;
+}
+
+.table caption {
+	font-weight: bold;
+	color: #444444;
+	margin: 0;
+	border-width: 1px 1px 0 1px;
+	border-style: solid;
+	border-color: #95B8E7;
+	background: url(bjt.gif) repeat-x;
+}
+
+.table th {
+	font-weight: 400;
+	color: #444444;
+	border-width: 0 0 1px 0;
+	border-right: 1px;
+	border-style: dotted;
+	background: url(../images/hbj.gif) repeat-x;
+	border-color: #dddddd;
+}
+
+.table td {
+	margin: 0;
+	border-width: 1px 1px 0 0;
+	border-style: dotted;
+	border-color: #dddddd;
+	color: #4f6b72;
+}
+
+.table tfoot {
+	background-color: #f4f4f4;
+}
+
+body {
+	font: 12px/1.5 "锟斤拷锟斤拷", arial, sans-serif;
+}
+
+.fieldset-self {
+	border: 1px solid #95B8E7;
+	border: 1px solid #95B8E7;
+}
+
+.fieldset-self legend {
+	font-weight: bold;
+	color: #09335d;
+}

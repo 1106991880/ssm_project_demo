@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="cn.springmvc.dao.DictionaryDetailDao">
+
+	<resultMap id="dictionaryDetail" type="cn.springmvc.model.DictionaryDetail">
+		<id column="DICTIONARY_DETAIL_ID" property="dictDetailId" jdbcType="VARCHAR" />
+		<result column="DICTIONARY_ID" property="dictId" jdbcType="VARCHAR" />
+		<result column="DICTIONARY_DETAIL_CODE" property="dictDetailCode" jdbcType="VARCHAR" />
+		<result column="DICTIONARY_DETAIL_NAME" property="dictDetailName" jdbcType="VARCHAR" />
+		<result column="DICTIONARY_DETAIL_STATUS" property="dictDetailStatus" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="CREATOR" property="creator" jdbcType="VARCHAR" />
+	</resultMap>
+	
+	<resultMap id="combobox" type="cn.springmvc.model.DictionaryDetail">
+		<result column="DICTIONARY_DETAIL_CODE" property="dictDetailCode" jdbcType="VARCHAR" />
+		<result column="DICTIONARY_DETAIL_NAME" property="dictDetailName" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="basesql">
+		DICTIONARY_DETAIL_ID,
+		DICTIONARY_ID,
+		DICTIONARY_DETAIL_CODE,
+		DICTIONARY_DETAIL_NAME,
+		DICTIONARY_DETAIL_STATUS,
+		CREATE_TIME,
+		CREATOR
+	</sql>
+	
+	<select id="loadDictCombobox" parameterType="java.lang.String" resultMap="combobox">
+		SELECT 
+		  dd.DICTIONARY_DETAIL_CODE AS dictDetailCode,
+		  dd.DICTIONARY_DETAIL_NAME AS dictDetailName 
+		FROM
+		  mvc_dictionary d 
+		  LEFT JOIN mvc_dictionary_DETAIL dd 
+		    ON d.DICTIONARY_ID = dd.DICTIONARY_ID 
+		WHERE d.DICTIONARY_STATUS = '0' 
+		  AND dd.DICTIONARY_DETAIL_STATUS = '0' 
+		  AND d.DICTIONARY_CODE = #{dictCode, jdbcType=VARCHAR} 
+		ORDER BY dd.CREATE_TIME 
+	</select>
+	
+	<select id="getDictDetailByDictId" parameterType="java.lang.String" resultMap="dictionaryDetail">
+		SELECT 
+		  d.DICTIONARY_DETAIL_ID,
+		  d.DICTIONARY_DETAIL_CODE,
+		  d.DICTIONARY_DETAIL_NAME,
+		  CASE
+		    WHEN d.DICTIONARY_DETAIL_STATUS = '0' 
+		    THEN '启用' 
+		    WHEN d.DICTIONARY_DETAIL_STATUS = '1' 
+		    THEN '禁用' 
+		    ELSE '' 
+		  END AS DICTIONARY_DETAIL_STATUS,
+		  d.CREATE_TIME,
+		  u.TRUE_NAME AS CREATOR 
+		FROM
+		  mvc_dictionary_DETAIL d 
+		  LEFT JOIN mvc_user_info u ON d.CREATOR = u.USER_ID 
+		WHERE 
+		  DICTIONARY_ID = #{dictId, jdbcType=VARCHAR}
+		ORDER BY d.CREATE_TIME 
+	</select>
+
+	<insert id="insertDictDetail" parameterType="cn.springmvc.model.DictionaryDetail">
+		<selectKey resultType="java.lang.String" keyProperty="dictDetailId" order="BEFORE">
+			SELECT REPLACE(UUID(),'-','') FROM DUAL
+		</selectKey>
+		INSERT INTO mvc_dictionary_DETAIL
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="dictDetailId != null and dictDetailId != ''">
+				DICTIONARY_DETAIL_ID,
+			</if>
+			<if test="dictId != null and dictId != ''">
+				DICTIONARY_ID,
+			</if>
+			<if test="dictDetailCode != null and dictDetailCode != ''">
+				DICTIONARY_DETAIL_CODE,
+			</if>
+			<if test="dictDetailName != null and dictDetailName != ''">
+				DICTIONARY_DETAIL_NAME,
+			</if>
+			<if test="dictDetailStatus != null and dictDetailStatus != ''">
+				DICTIONARY_DETAIL_STATUS,
+			</if>
+			<if test="createTime != null and createTime != ''">
+				CREATE_TIME,
+			</if>
+			<if test="creator != null and creator != ''">
+				CREATOR,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="dictDetailId != null and dictDetailId != ''">
+				#{dictDetailId, jdbcType=VARCHAR},
+			</if>
+			<if test="dictId != null and dictId != ''">
+				#{dictId, jdbcType=VARCHAR},
+			</if>
+			<if test="dictDetailCode != null and dictDetailCode != ''">
+				#{dictDetailCode, jdbcType=VARCHAR},
+			</if>
+			<if test="dictDetailName != null and dictDetailName != ''">
+				#{dictDetailName, jdbcType=VARCHAR},
+			</if>
+			<if test="dictDetailStatus != null and dictDetailStatus != ''">
+				#{dictDetailStatus, jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null and createTime != ''">
+				#{createTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="creator != null and creator != ''">
+				#{creator, jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	
+	<update id="updateDictDetail" parameterType="cn.springmvc.model.DictionaryDetail">
+		UPDATE mvc_dictionary_DETAIL
+		<set>
+			<if test="dictDetailName != null and dictDetailName != ''">
+				DICTIONARY_DETAIL_NAME = #{dictDetailName, jdbcType=VARCHAR},
+			</if>
+			<if test="dictDetailStatus != null and dictDetailStatus != ''">
+				DICTIONARY_DETAIL_STATUS = #{dictDetailStatus, jdbcType=VARCHAR},
+			</if>
+		</set>
+		WHERE DICTIONARY_DETAIL_ID = #{dictDetailId, jdbcType=VARCHAR}
+	</update>
+	
+	<select id="getDictDetailById" parameterType="java.lang.String" resultMap="dictionaryDetail">
+		SELECT 
+		 <include refid="basesql" />
+		FROM
+		  mvc_dictionary_DETAIL
+		WHERE 
+		  DICTIONARY_DETAIL_ID = #{dictDetailId, jdbcType=VARCHAR}
+	</select>
+	
+	<select id="getDictDetailCodeByDictId" parameterType="java.lang.String" resultType="java.lang.String">
+		SELECT 
+		  MAX(DICTIONARY_DETAIL_CODE) 
+		FROM
+		  mvc_dictionary_DETAIL 
+		WHERE DICTIONARY_ID = #{dictId, jdbcType=VARCHAR}
+	</select>
+
+</mapper>

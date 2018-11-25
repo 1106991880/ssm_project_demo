@@ -1,0 +1,44 @@
+@CHARSET "UTF-8";
+
+body {
+	font: 12px/20px "新宋体", "微软雅黑", Arial, sans-serif, Verdana, Tahoma;
+}
+
+.table_info {
+	width: 100%;
+	/* border-spacing: 0;
+	border-collapse: collapse;
+	border-style: solid;
+	border-color: #95b8e7;
+	border-width: 1px 1px 1px 1px; */
+	margin: 5px 0 5px 0; /*上 右 下 左 */
+}
+
+.table_info th {
+	padding: 5px;
+	/* border-width: 1px 1px 0 0;
+	border-style: dotted;
+	border-color: #dddddd;
+	color: #4f6b72; */
+	text-align: right;
+}
+
+.table_info td {
+	padding: 5px;
+	/* border-width: 1px 1px 0 0;
+	border-style: dotted;
+	border-color: #dddddd;
+	color: #4f6b72; */
+	text-align: left;
+}
+
+.fieldset-self {
+	border: 1px solid #95B8E7;
+	border: 1px solid #95B8E7;
+	margin: 5px 0 5px 0;
+}
+
+.fieldset-self legend {
+	font-weight: bold;
+	color: #09335d;
+}

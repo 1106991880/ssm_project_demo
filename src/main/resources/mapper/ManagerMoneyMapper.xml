@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.springmvc.dao.ManageMoneyDao">
+	<resultMap id="manageMoney" type="cn.springmvc.model.ManageMoney">
+		<id column="manage_id" property="manageId" jdbcType="VARCHAR" />
+		<result column="in_or_out" property="inOrOut" jdbcType="INTEGER" />
+		<result column="how_much" property="howMuch" jdbcType="DECIMAL" />
+		<result column="incident" property="incident" jdbcType="VARCHAR" />
+		<result column="take_time" property="takeTime" jdbcType="TIMESTAMP" />
+		<result column="if_take" property="ifTake" jdbcType="INTEGER" />
+		<result column="take_id" property="takeId" jdbcType="VARCHAR" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="create_id" property="createId" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="BaseSQL">
+		manage_id, in_or_out, how_much, incident, take_time,
+		if_take,
+		take_id, remark, create_time, update_time, create_id
+	</sql>
+	<sql id="BaseListSQL">
+		manage_id, in_or_out, how_much, incident, take_time, if_take,
+		(select true_name from mvc_user_info where take_id = user_id) as take_id, 
+		remark, create_time, update_time, 
+		<!-- 將查到的数据转化为true_name后放进create_id或者take_id -->
+		(select true_name from mvc_user_info where create_id = user_id) as create_id
+	</sql>
+	<select id="getTotalRows" parameterType="java.util.Map" resultType="java.lang.Integer">
+		select count(*) from mvc_manage_money
+		<if test="userLevel != 0">
+			where take_id = #{takeId, jdbcType=VARCHAR}
+		</if>
+	</select>
+	<select id="queryManageMoney" parameterType="java.util.Map" resultMap="manageMoney">
+		select
+		<include refid="BaseListSQL" />
+		from mvc_manage_money
+		<if test="userLevel != 0">
+			where take_id = #{takeId, jdbcType=VARCHAR}
+		</if>
+		order by take_time desc
+	</select>
+	<select id="queryAllManageMoney" parameterType="java.util.Map" resultMap="manageMoney">
+		select
+		<include refid="BaseListSQL" />
+		from mvc_manage_money
+		<where>
+			<if test="takeId != null and takeId != ''">
+				and take_id = #{takeId, jdbcType=VARCHAR}
+			</if>
+			<if test="inOrOut != null and inOrOut != ''">
+				and in_or_out = #{inOrOut, jdbcType=INTEGER}
+			</if>
+			<if test="ifTake != null and ifTake != ''">
+				and if_take = #{ifTake, jdbcType=INTEGER}
+			</if>
+			<!-- 用小於號或者大於號來查詢 -->
+			<if test="beginTime != null and beginTime != ''">
+				and take_time &gt;= #{beginTime, jdbcType=VARCHAR}
+			</if>
+			<if test="endTime != null and endTime != ''">
+				and take_time &lt;= #{endTime, jdbcType=VARCHAR}
+			</if>
+		</where>
+		order by take_time desc
+	</select>
+	<select id="getSum" parameterType="java.util.Map" resultType="java.math.BigDecimal">
+		select SUM(how_much) as howMuch
+		from mvc_manage_money
+		<where>
+			<if test="takeId != null and takeId != ''">
+				and take_id = #{takeId, jdbcType=VARCHAR}
+			</if>
+			<if test="inOrOut != null and inOrOut != ''">
+				and in_or_out = #{inOrOut, jdbcType=INTEGER}
+			</if>
+			<if test="ifTake != null and ifTake != ''">
+				and if_take = '1' = #{ifTake, jdbcType=INTEGER}
+			</if>
+			<if test="beginTime != null and beginTime != ''">
+				and take_time &gt;= #{beginTime, jdbcType=VARCHAR}
+			</if>
+			<if test="endTime != null and endTime != ''">
+				and take_time &lt;= #{endTime, jdbcType=VARCHAR}
+			</if>
+		</where>
+	</select>
+	<select id="getManageMoneyById" parameterType="java.lang.String" resultMap="manageMoney">
+		select
+		<include refid="BaseSQL"/>
+		from mvc_manage_money
+		where
+		manage_id = #{manageId, jdbcType=VARCHAR}
+	</select>
+	<insert id="saveManageMoney" parameterType="cn.springmvc.model.ManageMoney">
+		<selectKey resultType="java.lang.String" keyProperty="manageId" order="BEFORE">
+			SELECT REPLACE(UUID(),'-','') FROM DUAL
+		</selectKey>
+		insert into mvc_manage_money
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			manage_id,
+			<if test="inOrOut != null">
+				in_or_out,
+			</if>
+			<if test="howMuch != null">
+				how_much,
+			</if>
+			<if test="incident != null">
+				incident,
+			</if>
+			<if test="takeTime != null">
+				take_time,
+			</if>
+			<if test="ifTake != null">
+				if_take,
+			</if>
+			<if test="takeId != null">
+				take_id,
+			</if>
+			<if test="remark != null">
+				remark,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="updateTime != null">
+				update_time,
+			</if>
+			<if test="createId != null">
+				create_id,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="manageId != null">
+				#{manageId, jdbcType=VARCHAR},
+			</if>
+			<if test="inOrOut != null">
+				#{inOrOut, jdbcType=INTEGER},
+			</if>
+			<if test="howMuch != null">
+				#{howMuch, jdbcType=DECIMAL},
+			</if>
+			<if test="incident != null">
+				#{incident, jdbcType=VARCHAR},
+			</if>
+			<if test="takeTime != null">
+				#{takeTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="ifTake != null">
+				#{ifTake, jdbcType=INTEGER},
+			</if>
+			<if test="takeId != null">
+				#{takeId, jdbcType=VARCHAR},
+			</if>
+			<if test="remark != null">
+				#{remark, jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="createId != null">
+				#{createId, jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateManageMoney" parameterType="cn.springmvc.model.ManageMoney">
+		update mvc_manage_money
+		<set>
+			<if test="manageId != null">
+				manage_id = #{manageId, jdbcType=VARCHAR},
+			</if>
+			<if test="inOrOut != null">
+				in_or_out = #{inOrOut, jdbcType=INTEGER},
+			</if>
+			<if test="howMuch != null">
+				how_much = #{howMuch, jdbcType=DECIMAL},
+			</if>
+			<if test="incident != null">
+				incident = #{incident, jdbcType=VARCHAR},
+			</if>
+			<if test="takeTime != null">
+				take_time = #{takeTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="ifTake != null">
+				if_take = #{ifTake, jdbcType=INTEGER},
+			</if>
+			<if test="takeId != null">
+				take_id = #{takeId, jdbcType=VARCHAR},
+			</if>
+			<if test="remark != null">
+				remark = #{remark, jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime, jdbcType=TIMESTAMP},
+			</if>
+		</set>
+		where manage_id = #{manageId, jdbcType=VARCHAR}
+	</update>
+	<delete id="deleteManageMoney" parameterType="java.lang.String">
+		delete from mvc_manage_money where manage_id in
+		<foreach collection="array" item="id" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</delete>
+</mapper>

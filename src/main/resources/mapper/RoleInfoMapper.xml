@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.springmvc.dao.RoleInfoDao">
+	<resultMap id="role" type="cn.springmvc.model.RoleInfo">
+		<id column="role_id" property="roleId" jdbcType="VARCHAR" />
+		<result column="role_name" property="roleName" jdbcType="VARCHAR" />
+		<result column="role_desc" property="roleDesc" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="creator" property="creator" jdbcType="VARCHAR" />
+	</resultMap>
+	<resultMap id="roleWithMenu" type="cn.springmvc.model.RoleInfo">
+		<id column="role_id" property="roleId" jdbcType="VARCHAR" />
+		<result column="role_name" property="roleName" jdbcType="VARCHAR" />
+		<result column="role_desc" property="roleDesc" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="creator" property="creator" jdbcType="VARCHAR" />
+		<collection property="menus" ofType="cn.springmvc.model.RoleMenu">
+			<result column="role_id" property="roleId" jdbcType="VARCHAR" />
+			<result column="menu_id" property="menuId" jdbcType="VARCHAR" />
+			<association property="menu" javaType="cn.springmvc.model.MenuInfo">
+				<id column="menu_id" property="menuId" jdbcType="VARCHAR" />
+				<result column="menu_name" property="menuName" jdbcType="VARCHAR" />
+				<result column="menu_uri" property="menuUri" jdbcType="VARCHAR" />
+				<result column="menu_order" property="menuOrder" jdbcType="DECIMAL" />
+				<result column="menu_desc" property="menuDesc" jdbcType="VARCHAR" />
+			</association>
+		</collection>
+	</resultMap>
+	<sql id="basesql">
+		role_id, role_name, role_desc, create_time,
+		(select true_name from mvc_user_info where user_id = creator) as creator
+	</sql>
+	<select id="queryRoles" parameterType="cn.springmvc.model.RoleInfo" resultMap="role">
+		select <include refid="basesql" /> from mvc_role_info
+		<where>
+			<if test="roleName != null and roleName != ''">
+				and role_name like concat('%', #{roleName, jdbcType=VARCHAR}, '%')
+			</if>
+			<if test="roleDesc != null and roleDesc != ''">
+				and role_desc like concat('%', #{roleDesc, jdbcType=VARCHAR}, '%')
+			</if>
+		</where>
+	</select>
+	<select id="getTotalRows" parameterType="cn.springmvc.model.RoleInfo" resultType="java.lang.Integer">
+		select count(*) from mvc_role_info
+		<where>
+			<if test="roleName != null and roleName != ''">
+				and role_name like concat('%', #{roleName, jdbcType=VARCHAR}, '%')
+			</if>
+			<if test="roleDesc != null and roleDesc != ''">
+				and role_desc like concat('%', #{roleDesc, jdbcType=VARCHAR}, '%')
+			</if>
+		</where>
+	</select>
+	<insert id="saveRole" parameterType="cn.springmvc.model.RoleInfo">
+		<selectKey resultType="java.lang.String" keyProperty="roleId" order="BEFORE">
+			SELECT REPLACE(UUID(),'-','') FROM DUAL
+		</selectKey>
+		INSERT INTO mvc_role_info
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			role_id,
+			<if test="roleName != null">
+				role_name,
+			</if>
+			<if test="roleDesc != null">
+				role_desc,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+			<if test="creator != null">
+				creator,
+			</if>
+		</trim>
+		VALUES
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="roleId != null">
+				#{roleId, jdbcType=VARCHAR},
+			</if>
+			<if test="roleName != null">
+				#{roleName, jdbcType=VARCHAR},
+			</if>
+			<if test="roleDesc != null">
+				#{roleDesc, jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="creator != null">
+				#{creator, jdbcType=VARCHAR},
+			</if>
+		</trim>
+	</insert>
+	<select id="getRoleByRoleId" parameterType="java.lang.String" resultMap="roleWithMenu">
+		SELECT r.*, rm.*, m.*
+		FROM
+		   mvc_role_info r 
+		   LEFT JOIN mvc_role_menu rm 
+		      ON rm.role_id = r.role_id 
+		   LEFT JOIN mvc_menu m 
+		      ON m.menu_id = rm.menu_id 
+		WHERE r.role_id = #{roleId, jdbcType=VARCHAR}
+	</select>
+	<update id="updateRole" parameterType="cn.springmvc.model.RoleInfo">
+		UPDATE mvc_role_info
+		<set>
+			<if test="roleName != null">
+				role_name = #{roleName, jdbcType=VARCHAR},
+			</if>
+			<if test="roleDesc != null">
+				role_desc = #{roleDesc, jdbcType=VARCHAR},
+			</if>
+		</set>
+		WHERE role_id = #{roleId, jdbcType=VARCHAR}
+	</update>
+	<delete id="deleteRole" parameterType="java.lang.String">
+		DELETE FROM mvc_role_info WHERE role_id = #{roleId, jdbcType=VARCHAR}
+	</delete>
+	
+	<select id="getAllRoles" resultMap="role">
+		select <include refid="basesql" /> from mvc_role_info
+	</select>
+	
+	<select id="getRolesByUserId" parameterType="java.lang.String" resultMap="role">
+		SELECT
+		   r.role_id, r.role_name
+		FROM
+		   mvc_user_info u
+		   RIGHT JOIN mvc_user_role ur
+		      ON u.user_id = ur.user_id
+		   RIGHT JOIN mvc_role_info r
+		      ON ur.role_id = r.role_id
+		WHERE u.user_id = #{userId}
+	</select>
+</mapper>
