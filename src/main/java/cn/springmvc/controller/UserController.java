@@ -63,6 +63,7 @@ public class UserController extends BaseController {
 			@ModelAttribute(value = "user") UserInfo userInfo,
 			@ModelAttribute(value = "dept") DeptInfo dept) {
 		////log.info("查询用户列表");
+		System.out.println("查询用户列表");
 		Map<String, String> map = new HashMap<String, String>();
 		String trueName = userInfo.getTrueName();
 		map.put("mail", userInfo.getMail());

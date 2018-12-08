@@ -44,13 +44,13 @@ function openDeptTree() {
 		modal : true
 	});
 	$("#tree").tree({
-		url : '/ssm_template/dept/getDeptTree',
+		url : '/dept/getDeptTree',
 		method : 'post',
 		animate : true,
 		checkbox : false,
 		// lines:true,
 		onBeforeExpand : function(node) {// 点击展开按钮事件
-			$('#tree').tree('options').url = '/ssm_template/dept/getDeptTree?superId=' + node.id;
+			$('#tree').tree('options').url = '/dept/getDeptTree?superId=' + node.id;
 		}
 	});
 	$('#dialog').dialog('open');
