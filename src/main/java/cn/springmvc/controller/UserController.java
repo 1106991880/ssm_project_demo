@@ -104,7 +104,9 @@ public class UserController extends BaseController {
 			Model model) {
 		log.info("目前正在添加用户");
 		if (this.getUserInfo().getUserName().equals("system")) {
+
 			model.addAttribute("userLevelMap", super.userLevelMap());
+
 		} else {
 			Map<String, String> map = super.userLevelMap();
 			map.remove("0");
