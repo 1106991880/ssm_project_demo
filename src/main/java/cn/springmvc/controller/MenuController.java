@@ -26,8 +26,8 @@ public class MenuController extends BaseController {
 	private Logger log = Logger.getLogger(MenuController.class);
 
 	@Autowired
-	private MenuInfoService menuService;
-
+	//private MenuInfoService menuService;
+	private MenuInfoService menuInfoService;
 	/**
 	 * @Title: queryMenu
 	 * @Description: 查询菜单
@@ -40,7 +40,7 @@ public class MenuController extends BaseController {
 	public String queryMenu(Model model, PageInfo<MenuInfo> pageInfo,
 			MenuInfo menu) {
 		log.info("查询菜单记录");
-		List<MenuInfo> menuList = menuService.queryAllMenus(pageInfo, menu);
+		List<MenuInfo> menuList = menuInfoService.queryAllMenus(pageInfo, menu);
 		model.addAttribute("menuList", menuList);
 		model.addAttribute("pageInfo", pageInfo);
 		model.addAttribute("menu", menu);
@@ -58,7 +58,7 @@ public class MenuController extends BaseController {
 	public String add(Model model) {
 		log.info("进入添加页面");
 		MenuInfo menu = new MenuInfo();
-		menu.setMenuOrder(menuService.getMaxMenuOrder() + 1);
+		menu.setMenuOrder(menuInfoService.getMaxMenuOrder() + 1);
 		model.addAttribute("menu", menu);
 		model.addAttribute("menuTypes", super.menuTypeMap());
 		return "/menu/add";
@@ -73,7 +73,7 @@ public class MenuController extends BaseController {
 	@RequestMapping(value = "/saveMenu", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<String, Integer> saveMenu(MenuInfo menu) {
-		int result = menuService.saveMenu(menu);
+		int result = menuInfoService.saveMenu(menu);
 		Map<String, Integer> jsonMap = new HashMap<String, Integer>();
 		jsonMap.put("result", result);
 		return jsonMap;
@@ -89,7 +89,7 @@ public class MenuController extends BaseController {
 	@RequestMapping(value = "/editMenu", method = RequestMethod.POST)
 	public String editMenu(Model model, String menuId) {
 		log.info("进入编辑页面");
-		MenuInfo menu = menuService.getMenu(menuId);
+		MenuInfo menu = menuInfoService.getMenu(menuId);
 		if (null != menu) {
 			model.addAttribute("menu", menu);
 		}
@@ -106,7 +106,7 @@ public class MenuController extends BaseController {
 	@RequestMapping(value = "/updateMenu", method = RequestMethod.POST)
 	@ResponseBody
 	public Map<String, Integer> updateMenu(MenuInfo menu) {
-		int result = menuService.updateMenu(menu);
+		int result = menuInfoService.updateMenu(menu);
 		Map<String, Integer> jsonMap = new HashMap<String, Integer>();
 		jsonMap.put("result", result);
 		return jsonMap;
@@ -124,8 +124,8 @@ public class MenuController extends BaseController {
 	public Map<String, Integer> deleteMenu(Model model, String menuId) {
 		Map<String, Integer> jsonMap = new HashMap<String, Integer>();
 		if (StringUtil.isNotEmpty(menuId)) {
-			menuService.deleteRoleMenuByMenuId(menuId);// 删除菜单前，删除所有拥有此菜单的角色菜单关联
-			int result = menuService.deleteMenu(menuId);
+			menuInfoService.deleteRoleMenuByMenuId(menuId);// 删除菜单前，删除所有拥有此菜单的角色菜单关联
+			int result = menuInfoService.deleteMenu(menuId);
 			jsonMap.put("result", result);
 			log.info("删除菜单成功");
 		}
@@ -159,7 +159,7 @@ public class MenuController extends BaseController {
 			menu.setMenuName(menuName);
 		}
 		Map<String, Object> jsonMap = new HashMap<String, Object>();
-		List<MenuInfo> menuList = menuService
+		List<MenuInfo> menuList = menuInfoService
 				.querySystemMenus(/* pageInfo, */menu);
 		jsonMap.put("rows", menuList);
 		/* jsonMap.put("total", pageInfo.getTotalRecords()); */
@@ -186,7 +186,7 @@ public class MenuController extends BaseController {
 		// 设置好当前要现实的页数以及一页要显示几条记录
 		pageInfo.setCurrentPage(currentPage);
 		pageInfo.setPageSize(pageSize);
-		List<MenuInfo> menuList = menuService.queryAllMenus(pageInfo, menu);
+		List<MenuInfo> menuList = menuInfoService.queryAllMenus(pageInfo, menu);
 		Map<String, Object> jsonMap = new HashMap<String, Object>();
 		jsonMap.put("rows", menuList);// rows键 存放每页记录 list
 		jsonMap.put("total", pageInfo.getTotalRecords());// 总记录数
@@ -196,7 +196,7 @@ public class MenuController extends BaseController {
 	/**
 	 * 保存或修改菜单信息
 	 * 
-	 * @param menu
+	 * @param
 	 * @return
 	 */
 
@@ -207,14 +207,14 @@ public class MenuController extends BaseController {
 		Map<String, Object> map = new HashMap<String, Object>();
 		// 保存新的菜单
 		if (StringUtil.isEmpty(menuInfo.getMenuId())) {
-			menuInfo.setMenuOrder(menuService.getMaxMenuOrder() + 1);
+			menuInfo.setMenuOrder(menuInfoService.getMaxMenuOrder() + 1);
 			menuInfo.setCreator(getUserInfo().getUserId());
 			menuInfo.setCreateTime(new Date());
-			result = menuService.saveMenu(menuInfo);
+			result = menuInfoService.saveMenu(menuInfo);
 		}
 		// 更新菜单
 		else {
-			result = menuService.updateMenu(menuInfo);
+			result = menuInfoService.updateMenu(menuInfo);
 		}
 		log.info("result=================" + result);
 		if (result == 1) {
@@ -231,8 +231,8 @@ public class MenuController extends BaseController {
 		Map<String, Object> map = new HashMap<String, Object>();
 		int result = 0;
 		if (StringUtil.isNotEmpty(menuId)) {
-			menuService.deleteRoleMenuByMenuId(menuId);// 删除菜单前，删除所有拥有此菜单的角色菜单关联
-			result = menuService.deleteMenu(menuId);
+			menuInfoService.deleteRoleMenuByMenuId(menuId);// 删除菜单前，删除所有拥有此菜单的角色菜单关联
+			result = menuInfoService.deleteMenu(menuId);
 			log.info("删除菜单成功");
 		}
 		log.info("result=================" + result);
