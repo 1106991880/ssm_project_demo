@@ -1,0 +1,4 @@
+#Wed Nov 16 09:25:45 CST 2016
+eclipse.preferences.version=1
+validator.Checked=src/main/webapp/pages/menu/query.jsp,src/main/webapp/js/jquery.min.js
+validator.Unchecked=
